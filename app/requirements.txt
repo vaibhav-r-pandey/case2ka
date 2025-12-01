@@ -1,0 +1,7 @@
+flask
+markdown
+openpyxl
+html2text
+httpx
+openai
+gunicorn

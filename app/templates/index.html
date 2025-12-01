@@ -1,0 +1,125 @@
+<html>
+<head>
+    <title>IFX MSD GenAI</title>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: space-between;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .left {
+            width: 30%;
+        }
+        .right {
+            width: 70%;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+        }
+        pre#markdownPreview {
+            white-space: pre-wrap; /* Wrap long lines */
+            word-wrap: break-word; /* Break long words */
+            overflow-x: hidden; /* Disable horizontal scrolling */
+        }
+        /* Add styles for the loading spinner */
+        .loading-spinner {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #db4734;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Add the loading spinner -->
+    <div class="loading-spinner" id="loadingSpinner"></div>
+
+    <div class="left">
+        <h1 class="mb-4">Submit Your Case Info</h1>
+        <form id="caseForm" method="POST" action="{{ url_for('handle_post') }}" enctype="multipart/form-data" novalidate>
+            <div class="form-group">
+                <label for="Case_Number" class="form-label">Case Number:</label>
+                <input type="text" id="Case_Number" name="Case_Number" class="form-control" placeholder="Enter text for Input 1" required>
+                <div class="error-message" id="error-Case_Number"></div>
+            </div>
+            <div class="form-group">
+                <label for="Case_Subject" class="form-label">Case Subject:</label>
+                <input type="text" id="Case_Subject" name="Case_Subject" class="form-control" placeholder="Enter text for Input 2" required>
+                <div class="error-message" id="error-Case_Subject"></div>
+            </div>
+            <div class="form-group">
+                <label for="Case_Description" class="form-label">Case Description:</label>
+                <input type="text" id="Case_Description" name="Case_Description" class="form-control" placeholder="Enter text for Input 3" required>
+                <div class="error-message" id="error-Case_Description"></div>
+            </div>
+            <div class="form-group">
+                <label for="Case_Description_file" class="form-label">Attach Discussion Board Export (xlsx):</label>
+                <input type="file" id="Case_Description_file" name="Case_Description_file" class="form-control" required>
+                <div class="error-message" id="error-Case_Description_file"></div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Make KBA</button>
+        </form>
+    </div>
+    <div class="right">
+        <h2 class="mb-4">KBA</h2>
+        <pre id="markdownPreview" class="p-3 bg-light border rounded">{{ kbahtml|safe }}</pre>
+        <button class="btn btn-secondary mt-3" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </div>
+
+    <!-- Add Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript to handle loading spinner and form submission
+        const form = document.getElementById('caseForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const markdownPreview = document.getElementById('markdownPreview');
+
+        form.addEventListener('submit', function (event) {
+            // Clear the markdown preview content
+            markdownPreview.textContent = 'AI is Preparing KBA...';
+
+            // Show the loading spinner
+            loadingSpinner.style.display = 'block';
+
+            // Hide the spinner after the response is rendered
+            form.addEventListener('ajaxComplete', function () {
+                loadingSpinner.style.display = 'none';
+            });
+        });
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(markdownPreview.textContent)
+                .then(() => alert('KBA content copied to clipboard!'))
+                .catch(err => alert('Failed to copy: ' + err));
+        }
+    </script>
+</body>
+</html>
