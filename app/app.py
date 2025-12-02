@@ -9,10 +9,19 @@ app = Flask(__name__)
 # Set a secret key for encrypting session data
 app.secret_key = 'my_secret_key'
   
+# Health check endpoint
+@app.route('/health')
+def health_check():
+    return {'status': 'healthy'}, 200
+
 # To render a Index Page 
 @app.route('/')
 def view_form():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        print(f"Error rendering index: {e}")
+        return f"Error: {str(e)}", 500
   
 # For handling post request form we can get the form
 # inputs value by using POST attribute.
