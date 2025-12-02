@@ -3,24 +3,45 @@
 from flask import Flask, render_template, request
 import markdown
 import case2ka
+import logging
+import sys
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
  
 # Set a secret key for encrypting session data
 app.secret_key = 'my_secret_key'
+
+@app.before_request
+def log_request_info():
+    logger.info('Request: %s %s', request.method, request.url)
+    logger.info('Headers: %s', dict(request.headers))
   
-# Health check endpoint
+# Multiple health check endpoints for different platforms
 @app.route('/health')
+@app.route('/healthz')
+@app.route('/ping')
 def health_check():
-    return {'status': 'healthy'}, 200
+    logger.info('Health check requested')
+    return {'status': 'healthy', 'message': 'Flask app is running'}, 200
+
+# Simple test endpoint
+@app.route('/test')
+def test():
+    logger.info('Test endpoint accessed')
+    return 'Flask app is working!', 200
 
 # To render a Index Page 
 @app.route('/')
 def view_form():
     try:
+        logger.info('Rendering index page')
         return render_template('index.html')
     except Exception as e:
-        print(f"Error rendering index: {e}")
+        logger.error(f"Error rendering index: {e}")
         return f"Error: {str(e)}", 500
   
 # For handling post request form we can get the form
@@ -52,4 +73,5 @@ def handle_post():
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    logger.info(f'Starting Flask app on host=0.0.0.0, port={port}')
+    app.run(host='0.0.0.0', port=port, debug=False)
